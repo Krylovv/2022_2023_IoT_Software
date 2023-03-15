@@ -1,5 +1,6 @@
 import configparser
 import json
+import re
 
 from telethon.sync import TelegramClient
 from telethon import connection
@@ -59,14 +60,13 @@ async def dump_all_participants(channel):
 
 
 async def dump_all_messages(channel):
-    print('you are here')
     """Записывает json-файл с информацией о всех сообщениях канала/чата"""
     offset_msg = 0    # номер записи, с которой начинается считывание
     limit_msg = 100   # максимальное число записей, передаваемых за один раз
 
     all_messages = []   # список всех сообщений
     total_messages = 0
-    total_count_limit = 10  # поменяйте это значение, если вам нужны не все сообщения
+    total_count_limit = 2  # поменяйте это значение, если вам нужны не все сообщения
 
     class DateTimeEncoder(json.JSONEncoder):
         '''Класс для сериализации записи дат в JSON'''
@@ -78,7 +78,6 @@ async def dump_all_messages(channel):
             return json.JSONEncoder.default(self, o)
 
     while True:
-        print('you are here')
         history = await client(GetHistoryRequest(
             peer=channel,
             offset_id=offset_msg,
@@ -98,12 +97,20 @@ async def dump_all_messages(channel):
     with open('channel_messages.json', 'w', encoding='utf8') as outfile:
          json.dump(all_messages, outfile, ensure_ascii=False, cls=DateTimeEncoder, indent=4)
 
+def remove_newlines(value):
+    value = value.replace("\n", " ").replace('\r\n', ' ').replace("\"", "").replace("»", "").replace("«", "")
+    return value
+
 def json_parser(filename):
+    text = ""
     with open(filename, 'r') as file:
         chat = json.loads(file.read())
         for i in chat:
-            print(i['date'], i['message'])
-        print(file)
+            if i['message'] != "":
+                tmp = i['message']
+                tmp = remove_newlines(tmp)
+                text += (tmp + " ")
+        return(text)
 
 
 
@@ -112,8 +119,17 @@ async def main():
     channel = await client.get_entity(url)
     #await dump_all_participants(channel)
     await dump_all_messages(channel)
-    json_parser('channel_messages.json')
+    text = json_parser('channel_messages.json')
+    emoji_pattern = re.compile("["
+                               u"\U0001F600-\U0001F64F"  # emoticons
+                               u"\U0001F300-\U0001F5FF"  # symbols & pictographs
+                               u"\U0001F680-\U0001F6FF"  # transport & map symbols
+                               u"\U0001F1E0-\U0001F1FF"  # flags (iOS)
+                               "]+", flags=re.UNICODE)
+    text = (emoji_pattern.sub(r'', text))  # no emoji
+    print(text)
 
 
 with client:
     client.loop.run_until_complete(main())
+

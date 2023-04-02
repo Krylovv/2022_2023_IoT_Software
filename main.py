@@ -2,6 +2,7 @@
 
 import configparser
 import json
+import requests
 import re
 from telethon.sync import TelegramClient
 

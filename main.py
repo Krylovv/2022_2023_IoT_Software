@@ -117,6 +117,27 @@ def json_parser(filename):
                     text += (tmp + " ")
         return text
 
+    
+def sum():
+    url = "https://api.aicloud.sbercloud.ru/public/v2/summarizator/predict"
+    f = open("text.txt", "r", encoding='utf8')
+    text = f.read()
+    payload = json.dumps({
+      "instances": [
+          {"text": text,
+           "num_beams": 80,
+           "num_return_sequences": 15,
+           "length_penalty": 1.0
+           }
+        ]
+      })
+    headers = {
+      'Content-type': 'application/json'
+    }
+    response = requests.request("POST", url, headers=headers, data=payload)
+    response_obj = json.loads(response.text)
+    return response_obj['prediction_best']['bertscore']
+
 
 async def parse():
     url = "https://t.me/+nWDkY80icqkzMzcy"

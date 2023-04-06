@@ -119,7 +119,7 @@ def json_parser(filename):
         return text
 
     
-def sum():
+def summary_text():
     url = "https://api.aicloud.sbercloud.ru/public/v2/summarizator/predict"
     f = open("text.txt", "r", encoding='utf8')
     text = f.read()
@@ -127,7 +127,7 @@ def sum():
       "instances": [
           {"text": text,
            "num_beams": 80,
-           "num_return_sequences": 15,
+           "num_return_sequences": 20,
            "length_penalty": 1.0
            }
         ]
@@ -156,6 +156,10 @@ async def parse():
     f = open("text.txt", "w")
     f.write(text)
     f.close()
+    summary = summary_text()
+    r = open("result.txt", "w", encoding='utf8')
+    r.write(summary)
+    r.close()
 
 with client:
     client.loop.run_until_complete(parse())

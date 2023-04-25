@@ -2,6 +2,7 @@
 
 import configparser
 import json
+import requests
 import re
 from telethon.sync import TelegramClient
 
@@ -117,6 +118,27 @@ def json_parser(filename):
                     text += (tmp + " ")
         return text
 
+    
+def summary_text():
+    url = "https://api.aicloud.sbercloud.ru/public/v2/summarizator/predict"
+    f = open("text.txt", "r", encoding='utf8')
+    text = f.read()
+    payload = json.dumps({
+      "instances": [
+          {"text": text,
+           "num_beams": 80,
+           "num_return_sequences": 20,
+           "length_penalty": 1.0
+           }
+        ]
+      })
+    headers = {
+      'Content-type': 'application/json'
+    }
+    response = requests.request("POST", url, headers=headers, data=payload)
+    response_obj = json.loads(response.text)
+    return response_obj['prediction_best']['bertscore']
+
 
 async def parse():
     url = "https://t.me/+nWDkY80icqkzMzcy"
@@ -134,6 +156,10 @@ async def parse():
     f = open("text.txt", "w")
     f.write(text)
     f.close()
+    summary = summary_text()
+    r = open("result.txt", "w", encoding='utf8')
+    r.write(summary)
+    r.close()
 
 with client:
     client.loop.run_until_complete(parse())

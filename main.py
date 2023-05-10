@@ -67,7 +67,7 @@ async def dump_all_messages(channel):
     limit_msg = 100   # максимальное число записей, передаваемых за один раз
 
     all_messages = []   # список всех сообщений
-    total_count_limit = 2  # поменяйте это значение, если вам нужны не все сообщения
+    total_count_limit = 500  # поменяйте это значение, если вам нужны не все сообщения
 
     class DateTimeEncoder(json.JSONEncoder):
         # Класс для сериализации записи дат в JSON
@@ -113,9 +113,10 @@ def json_parser(filename):
             keys = list(i.keys())
             if 'message' in keys:
                 if i['message'] != "":
-                    tmp = i['message']
-                    tmp = remove_newlines(tmp)
-                    text += (tmp + " ")
+                    if datetime.today().strftime('%Y-%m-%d') in i['date']:
+                        tmp = i['message']
+                        tmp = remove_newlines(tmp)
+                        text += (tmp + " ")
         return text
 
     

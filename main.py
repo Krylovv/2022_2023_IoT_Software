@@ -6,6 +6,7 @@ import requests
 import re
 from telethon.sync import TelegramClient
 
+
 # для корректного переноса времени сообщений в json
 from datetime import datetime
 
@@ -127,7 +128,7 @@ def summary_text():
     payload = json.dumps({
       "instances": [
           {"text": text,
-           "num_beams": 80,
+           "num_beams": 5,
            "num_return_sequences": 20,
            "length_penalty": 1.0
            }
@@ -138,11 +139,16 @@ def summary_text():
     }
     response = requests.request("POST", url, headers=headers, data=payload)
     response_obj = json.loads(response.text)
+    print(response_obj['prediction_best']['bertscore'])
     return response_obj['prediction_best']['bertscore']
 
+def get_link():
+    f = open("link.txt", "r", encoding='utf8')
+    text = f.read()
+    return text
 
 async def parse():
-    url = "https://t.me/+nWDkY80icqkzMzcy"
+    url = get_link()
     channel = await client.get_entity(url)
     await dump_all_messages(channel)
     text = json_parser('channel_messages.json')
